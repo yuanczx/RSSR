@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Article } from '../../types';
 import './ArticlePanel.css';
+import { useTranslation } from "react-i18next"
 
 interface ArticlePanelProps {
   title: string;
@@ -37,6 +38,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
       return '';
     }
   };
+  const { t } = useTranslation()
 
   const escHtml = (text: string) => {
     if (!text) return '';
@@ -61,13 +63,13 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
           className={`toolbar-btn ${filter === 'all' ? 'active' : ''}`}
           onClick={() => onSetFilter('all')}
         >
-          All
+          {t("all")}
         </button>
         <button 
           className={`toolbar-btn ${filter === 'unread' ? 'active' : ''}`}
           onClick={() => onSetFilter('unread')}
         >
-          Unread
+          {t("unread")}
         </button>
         <div className="filter-spacer"></div>
         <button 
@@ -75,7 +77,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
           onClick={onMarkAllRead}
           title="Mark all as read"
         >
-          Mark read
+          {t("mark_read")}
         </button>
         <button 
           className="toolbar-btn" 
@@ -89,7 +91,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
       <div className="article-list">
         {articles.length === 0 ? (
           <div className="empty-state">
-            No articles
+            {t("no_articles")}
           </div>
         ) : (
           articles.map(article => (
@@ -101,7 +103,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
               <div className="article-item-header">
                 <div className="unread-dot"></div>
                 <span className="article-feed-name">
-                  {article.feed_id || 'Unknown Feed'}
+                  {article.feed_id || t("unknown_feed")}
                 </span>
                 <span className="article-date">
                   {formatDate(article.published_at)}

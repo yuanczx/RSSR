@@ -1,6 +1,7 @@
 import React from 'react';
-import type { Article } from '../types';
+import type { Article } from '../../types';
 import './Reader.css';
+import { useTranslation } from "react-i18next"
 
 interface ReaderProps {
   article: Article | null;
@@ -21,6 +22,8 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
       return '';
     }
   };
+
+  const { t } = useTranslation()
 
   const escHtml = (text: string) => {
     if (!text) return '';
@@ -47,8 +50,8 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
-          <div className="reader-empty-text">Select an article</div>
-          <div className="reader-empty-sub">Choose something from the list to read</div>
+          <div className="reader-empty-text">{t("select_article")}</div>
+          <div className="reader-empty-sub">{t("choose_to_read")}</div>
         </div>
       </div>
     );
@@ -62,7 +65,7 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
             className="reader-topbar-btn" 
             onClick={() => onToggleRead(article.id)}
           >
-            {article.read ? 'Mark Unread' : 'Mark Read'}
+            {article.read ? t('mark_unread') : t('mark_read')}
           </button>
           
           {article.url && (
@@ -73,7 +76,7 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
               style={{ textDecoration: 'none' }}
             >
               <button className="reader-topbar-btn">
-                Open Original ↗
+                {t("open_original")} ↗
               </button>
             </a>
           )}

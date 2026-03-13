@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Modal.css';
+import { useTranslation } from "react-i18next"
 
 interface AddGroupModalProps {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface AddGroupModalProps {
 
 const AddGroupModal: React.FC<AddGroupModalProps> = ({ onClose, onSubmit }) => {
   const [name, setName] = useState('');
+  const {t} = useTranslation()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -29,9 +31,9 @@ const AddGroupModal: React.FC<AddGroupModalProps> = ({ onClose, onSubmit }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-title">New Group</div>
+        <div className="modal-title">{t("new_group")}</div>
         
-        <label>Group Name</label>
+        <label>{t("group_name")}</label>
         <input
           type="text"
           value={name}
@@ -42,10 +44,10 @@ const AddGroupModal: React.FC<AddGroupModalProps> = ({ onClose, onSubmit }) => {
         
         <div className="modal-actions">
           <button className="btn-cancel" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </button>
           <button className="btn-primary" onClick={handleSubmit}>
-            Create Group
+            {t("create_group")}
           </button>
         </div>
       </div>

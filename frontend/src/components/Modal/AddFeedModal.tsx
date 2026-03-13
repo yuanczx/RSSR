@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Group } from '../../types';
 import './Modal.css';
+import { useTranslation } from "react-i18next"
 
 interface AddFeedModalProps {
   groups: Group[];
@@ -11,6 +12,7 @@ interface AddFeedModalProps {
 const AddFeedModal: React.FC<AddFeedModalProps> = ({ groups, onClose, onSubmit }) => {
   const [url, setUrl] = useState('');
   const [groupId, setGroupId] = useState<string>('');
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,9 +34,9 @@ const AddFeedModal: React.FC<AddFeedModalProps> = ({ groups, onClose, onSubmit }
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-title">Add Feed</div>
+        <div className="modal-title">{t("add_feed")}</div>
         
-        <label>Feed URL</label>
+        <label>{t("feed_url")}</label>
         <input
           type="url"
           value={url}
@@ -43,12 +45,12 @@ const AddFeedModal: React.FC<AddFeedModalProps> = ({ groups, onClose, onSubmit }
           autoFocus
         />
         
-        <label>Group (optional)</label>
+        <label>{t("group_optional")}</label>
         <select 
           value={groupId} 
           onChange={e => setGroupId(e.target.value)}
         >
-          <option value="">No group</option>
+          <option value="">{t("no_group")}</option>
           {groups.map(group => (
             <option key={group.id} value={group.id}>
               {group.name}
@@ -58,10 +60,10 @@ const AddFeedModal: React.FC<AddFeedModalProps> = ({ groups, onClose, onSubmit }
         
         <div className="modal-actions">
           <button className="btn-cancel" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </button>
           <button className="btn-primary" onClick={handleSubmit}>
-            Add Feed
+            {t("add_feed")}
           </button>
         </div>
       </div>

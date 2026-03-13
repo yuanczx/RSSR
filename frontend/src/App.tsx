@@ -9,6 +9,7 @@ import Toast from "./components/Toast/Toast";
 import type { AppState, Feed, Group, Article, FeedStats } from "./types";
 import { api } from "./api";
 import "./styles/global.css";
+import { useTranslation } from "react-i18next"
 
 const initialState: AppState = {
   feeds: [],
@@ -38,6 +39,7 @@ function App() {
     message: "",
     show: false,
   });
+  const { t } = useTranslation()
 
   useEffect(() => {
     init();
@@ -49,6 +51,7 @@ function App() {
 
   const init = async () => {
     try {
+      setState((s)=>({...s,currentTitle: t("all_articles")}));
       await Promise.all([loadFeeds(), loadGroups(), loadStats()]);
       await loadArticles();
     } catch (e) {
@@ -220,13 +223,13 @@ function App() {
       await loadFeeds();
       await loadStats();
       if (state.currentFeedId === feedId) {
-        selectView("all", "All Articles");
+        selectView("all", t("all_articles"));
       } else {
         await loadArticles();
       }
-      showToast("Feed deleted");
+      showToast(t("feed_deleted"));
     } catch (e) {
-      showToast("Delete failed");
+      showToast(t("delete_failed"));
       console.error(e);
     }
   };

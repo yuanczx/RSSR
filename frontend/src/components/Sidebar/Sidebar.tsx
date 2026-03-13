@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Feed, Group, FeedStats } from '../../types';
 import './Sidebar.css';
+import { useTranslation } from "react-i18next";
 
 interface SidebarProps {
   feeds: Feed[];
@@ -29,8 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAddGroup,
   onContextMenu,
 }) => {
+  const { t } = useTranslation()
   const totalUnread = Object.values(feedStats).reduce((sum, stats) => sum + (stats.unread_count || 0), 0);
-
   const getFeedUnreadCount = (feedId: number) => {
     return feedStats[feedId]?.unread_count || 0;
   };
@@ -55,15 +56,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <div className="sidebar-actions">
-        <button className="btn-ghost" onClick={onAddFeed}>+ Add Feed</button>
-        <button className="btn-ghost" onClick={onAddGroup}>+ Group</button>
+        <button className="btn-ghost" onClick={onAddFeed}>+ {t("add_feed")}</button>
+        <button className="btn-ghost" onClick={onAddGroup}>+ {t("new_group")}</button>
       </div>
 
       <div className="sidebar-nav">
-        <div className="nav-section-label">Inbox</div>
+        <div className="nav-section-label">{t("inbox")}</div>
         <div 
           className={`nav-item ${currentView === 'all' && currentFeedId === null ? 'active' : ''}`}
-          onClick={() => onSelectView('all', 'All Articles')}
+          onClick={() => onSelectView('all', t('all_articles'))}
         >
           <div className="nav-item-icon">
             <svg className="icon" viewBox="0 0 24 24">
@@ -73,13 +74,13 @@ const Sidebar: React.FC<SidebarProps> = ({
               <rect x="3" y="14" width="7" height="7"/>
             </svg>
           </div>
-          <span className="nav-item-label">All Articles</span>
+          <span className="nav-item-label">{t("all_articles")}</span>
           {totalUnread > 0 && <span className="nav-badge">{totalUnread}</span>}
         </div>
         
         <div 
           className={`nav-item ${currentView === 'unread' ? 'active' : ''}`}
-          onClick={() => onSelectView('unread', 'Unread')}
+          onClick={() => onSelectView('unread', t("unread"))}
         >
           <div className="nav-item-icon">
             <svg className="icon" viewBox="0 0 24 24">
@@ -87,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <polyline points="12 7 12 12 16 14"/>
             </svg>
           </div>
-          <span className="nav-item-label">Unread</span>
+          <span className="nav-item-label">{t("unread")}</span>
           {totalUnread > 0 && <span className="nav-badge">{totalUnread}</span>}
         </div>
 
