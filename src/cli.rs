@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 
 use crate::feed::FeedManager;
 use crate::storage::Storage;
+use crate::utils;
 
 #[derive(Parser)]
 #[command(name = "rssr")]
@@ -43,11 +44,11 @@ pub enum Commands {
         #[arg(short, long)]
         article_id: Option<i64>,
         /// Mark all article as read (default) or unread
-        #[arg(short, long)]
+        #[arg(long)]
         all: bool,
         /// Mark as read (default) or unread
         #[arg(short, long)]
-        read: bool,
+        unread: bool,
     },
     /// Delete a feed
     Delete {
@@ -89,15 +90,33 @@ pub async fn run_cli(storage: Storage) -> Result<()> {
                 return Ok(());
             }
             for article in articles {
-                let read_status = if article.read { "[READ]" } else { "[UNREAD]" };
-                println!("\n{} {}", read_status, article.title);
+                // 阅读状态标记 + 颜色（如果支持）
+                let status_symbol = if article.read { "✓" } else { "◉" };
+                let feed_title = feed_manager
+                    .storage()
+                    .get_feed(article.feed_id)
+                    .await?
+                    .map(|f| f.title)
+                    .ok_or(anyhow::anyhow!("Feed not found"))?;
+                println!("\n{status_symbol} [{:3}] {} | {}", article.id, article.title, feed_title);
+
+                // 清理HTML标签并截断预览
                 if let Some(desc) = &article.description {
-                    let preview = if desc.len() > 100 { &desc[..100] } else { desc };
-                    println!("  {}", preview);
+                    let clean_text = utils::strip_html_tags(desc);
+                    let preview: String = clean_text.chars().take(80).collect();
+                    if !preview.is_empty() {
+                        println!("  └─ {}", preview);
+                    }
                 }
+                // meta info
                 println!("  Link: {}", article.link);
                 if let Some(published) = article.published {
-                    println!("  Published: {}", published.format("%Y-%m-%d %H:%M"));
+                    let relative = utils::time::get_relative_time(published);
+                    println!(
+                        "  Published: {} ({})",
+                        published.format("%Y-%m-%d %H:%M"),
+                        relative
+                    );
                 }
             }
         }
@@ -112,19 +131,19 @@ pub async fn run_cli(storage: Storage) -> Result<()> {
         }
         Commands::Mark {
             article_id,
-            read,
+            unread,
             feed_id,
             all,
         } => {
             if all {
-                feed_manager.storage().mark_all(read).await?;
+                feed_manager.storage().mark_all(!unread).await?;
                 return Ok(());
             }
             feed_manager
                 .storage()
-                .mark_articles_read(feed_id, article_id, read)
+                .mark_articles_read(feed_id, article_id, !unread)
                 .await?;
-            let status = if read { "read" } else { "unread" };
+            let status = if unread { "unread" } else { "read" };
             println!("Marked as {}", status);
         }
         Commands::Delete { feed_id } => {

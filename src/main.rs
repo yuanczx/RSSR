@@ -3,6 +3,7 @@ mod feed;
 mod models;
 mod storage;
 mod web;
+mod utils;
 
 use anyhow::Result;
 use storage::Storage;
