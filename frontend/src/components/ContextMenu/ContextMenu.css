@@ -1,0 +1,30 @@
+.ctx-menu {
+  position: fixed;
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  z-index: 150;
+  min-width: 160px;
+  padding: 4px;
+  animation: fadein 0.1s ease;
+}
+
+.ctx-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 5px;
+  color: var(--ink-2);
+  transition: background 0.1s;
+}
+
+.ctx-item:hover { background: var(--paper-2); }
+.ctx-item.danger { color: #c0392b; }
+.ctx-item.danger:hover { background: #fef0ee; }
+
+.ctx-sep { 
+  height: 1px; 
+  background: var(--paper-3); 
+  margin: 4px 8px; 
+}

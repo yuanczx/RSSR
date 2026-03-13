@@ -1,0 +1,26 @@
+[package]
+name = "rssr"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+# RSS/Atom parsing
+rss = "2.0"
+atom_syndication = "0.12"
+reqwest = { version = "0.11", features = ["blocking"] }
+# Web server
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["fs", "cors"] }
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Storage
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
