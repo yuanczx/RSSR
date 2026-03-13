@@ -1,6 +1,7 @@
 use anyhow::{Ok, Result};
 use clap::{Parser, Subcommand};
 
+use crate::config::AppConfig;
 use crate::feed::FeedManager;
 use crate::storage::Storage;
 use crate::utils;
@@ -57,13 +58,16 @@ pub enum Commands {
     },
     /// Start web UI server
     Serve {
+        /// Host to listen on
+        #[arg(short, long)]
+        host: Option<String>,
         /// Port to listen on
-        #[arg(short, long, default_value = "8080")]
-        port: u16,
+        #[arg(short, long)]
+        port: Option<u16>,
     },
 }
 
-pub async fn run_cli(storage: Storage) -> Result<()> {
+pub async fn run_cli(storage: Storage, app_config: AppConfig) -> Result<()> {
     let cli = Cli::parse();
     let feed_manager = FeedManager::new(storage);
 
@@ -90,7 +94,6 @@ pub async fn run_cli(storage: Storage) -> Result<()> {
                 return Ok(());
             }
             for article in articles {
-                // 阅读状态标记 + 颜色（如果支持）
                 let status_symbol = if article.read { "✓" } else { "◉" };
                 let feed_title = feed_manager
                     .storage()
@@ -98,9 +101,11 @@ pub async fn run_cli(storage: Storage) -> Result<()> {
                     .await?
                     .map(|f| f.title)
                     .ok_or(anyhow::anyhow!("Feed not found"))?;
-                println!("\n{status_symbol} [{:3}] {} | {}", article.id, article.title, feed_title);
-
-                // 清理HTML标签并截断预览
+                println!(
+                    "\n{status_symbol} [{:3}] {} | {}",
+                    article.id, article.title, feed_title
+                );
+                // Clear HTML tags
                 if let Some(desc) = &article.description {
                     let clean_text = utils::strip_html_tags(desc);
                     let preview: String = clean_text.chars().take(80).collect();
@@ -150,10 +155,10 @@ pub async fn run_cli(storage: Storage) -> Result<()> {
             feed_manager.storage().delete_feed(feed_id).await?;
             println!("Deleted feed {}", feed_id);
         }
-        Commands::Serve { port } => {
-            println!("Starting web server on port {}...", port);
-            println!("Open http://localhost:{} in your browser", port);
-            crate::web::serve(feed_manager.storage().clone(), port).await?;
+        Commands::Serve { host, port } => {
+            let host = host.unwrap_or(app_config.webui.host);
+            let port = port.unwrap_or(app_config.webui.port);
+            crate::web::serve(feed_manager.storage().clone(), &host, port).await?;
         }
     }
 

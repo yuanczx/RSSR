@@ -41,14 +41,14 @@ struct ApiResponse<T> {
     error: Option<String>,
 }
 
-pub async fn serve(storage: Storage, port: u16) -> Result<()> {
+pub async fn serve(storage: Storage, host: &str, port: u16) -> Result<()> {
     let feed_manager = FeedManager::new(storage);
 
     use axum::http::Method;
     use tower_http::cors::{Any, CorsLayer};
 
     let cors = CorsLayer::new()
-        .allow_origin(Any) //NOTE 本地开发先 Any
+        .allow_origin(Any) //NOTE Dev Env
         .allow_methods([
             Method::GET,
             Method::POST,
@@ -76,8 +76,8 @@ pub async fn serve(storage: Storage, port: u16) -> Result<()> {
         .with_state(feed_manager)
         .nest_service("/", ServeDir::new("frontend/dist"));
 
-    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
-    println!("Server running on http://localhost:{}", port);
+    let listener = tokio::net::TcpListener::bind(format!("{}:{}", host, port)).await?;
+    println!("Server running on http://{}:{}", host, port);
     axum::serve(listener, app).await?;
     Ok(())
 }
