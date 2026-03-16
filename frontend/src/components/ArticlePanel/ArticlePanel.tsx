@@ -106,7 +106,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
                   {article.feed_id || t("unknown_feed")}
                 </span>
                 <span className="article-date">
-                  {formatDate(article.published_at)}
+                  {formatDate(article.published)}
                 </span>
               </div>
               <div 

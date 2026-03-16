@@ -22,7 +22,7 @@ export interface Article {
   url?: string;
   author?: string;
   read: boolean;
-  published_at: string;
+  published: string;
 }
 
 export interface FeedStats {

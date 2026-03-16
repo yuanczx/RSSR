@@ -20,5 +20,6 @@
     "unknown_feed": "未知订阅源",
     "select_article": "选择一篇文章",
     "choose_to_read": "从列表中选择一篇文章开始阅读",
-    "open_original": "原始网页"
+    "open_original": "原始网页",
+    "locale": "zh-CN"
 }

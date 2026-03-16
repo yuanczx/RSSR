@@ -20,5 +20,6 @@
     "unknown_feed": "Unknown Feed",
     "select_article": "Select an article",
     "choose_to_read": "Choose something from the list to read",
-    "open_original": "Open Original"
+    "open_original": "Open Original",
+    "locale": "en-US"
 }

@@ -3,6 +3,9 @@ name = "rssr"
 version = "0.1.0"
 edition = "2021"
 
+[build-dependencies]
+which = "6"
+
 [dependencies]
 # CLI
 clap = { version = "4.4", features = ["derive"] }

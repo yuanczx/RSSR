@@ -9,7 +9,7 @@ import Toast from "./components/Toast/Toast";
 import type { AppState, Feed, Group, Article, FeedStats } from "./types";
 import { api } from "./api";
 import "./styles/global.css";
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next";
 
 const initialState: AppState = {
   feeds: [],
@@ -39,7 +39,7 @@ function App() {
     message: "",
     show: false,
   });
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   useEffect(() => {
     init();
@@ -51,7 +51,7 @@ function App() {
 
   const init = async () => {
     try {
-      setState((s)=>({...s,currentTitle: t("all_articles")}));
+      setState((s) => ({ ...s, currentTitle: t("all_articles") }));
       await Promise.all([loadFeeds(), loadGroups(), loadStats()]);
       await loadArticles();
     } catch (e) {

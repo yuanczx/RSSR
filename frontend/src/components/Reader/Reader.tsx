@@ -10,10 +10,11 @@ interface ReaderProps {
 }
 
 const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
+  const { t } = useTranslation()
   const formatDate = (iso: string) => {
     try {
       const d = new Date(iso);
-      return d.toLocaleDateString('en-US', { 
+      return d.toLocaleDateString(t('locale'), { 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
@@ -23,7 +24,6 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
     }
   };
 
-  const { t } = useTranslation()
 
   const escHtml = (text: string) => {
     if (!text) return '';
@@ -94,9 +94,9 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
           </h1>
           
           <div className="reader-meta">
-            {article.published_at && (
+            {article.published && (
               <>
-                <span>{formatDate(article.published_at)}</span>
+                <span>{formatDate(article.published)}</span>
                 <div className="reader-meta-sep"></div>
               </>
             )}
