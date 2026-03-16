@@ -10,6 +10,8 @@ pub struct AppConfig {
     pub storage_path: String,
     #[serde(default)]
     pub webui: WebUIConfig,
+    #[serde(default = "default::time_zone")]
+    pub time_zone: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

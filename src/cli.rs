@@ -115,11 +115,13 @@ pub async fn run_cli(storage: Storage, app_config: AppConfig) -> Result<()> {
                 }
                 // meta info
                 println!("  Link: {}", article.link);
+                let time_zone = utils::time::parse_timezone(&app_config.time_zone);
                 if let Some(published) = article.published {
-                    let relative = utils::time::get_relative_time(published);
+                    let published_local = published.with_timezone(&time_zone);
+                    let relative = utils::time::relative_time(published,&app_config.time_zone);
                     println!(
                         "  Published: {} ({})",
-                        published.format("%Y-%m-%d %H:%M"),
+                        published_local.format("%Y-%m-%d %H:%M"),
                         relative
                     );
                 }

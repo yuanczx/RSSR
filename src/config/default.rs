@@ -8,6 +8,10 @@ pub fn storage_path() -> String {
     data_path.display().to_string()
 }
 
+pub fn time_zone() -> String {
+    "UTC+8".to_string()
+}
+
 pub fn webui_host() -> String {
     "127.0.0.1".to_string()
 }
@@ -21,6 +25,7 @@ impl Default for AppConfig {
      fn default() -> Self {
         Self {
             storage_path: storage_path(),
+            time_zone: time_zone(),
             webui: WebUIConfig::default(),
         }
     }

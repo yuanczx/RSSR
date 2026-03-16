@@ -1,11 +1,12 @@
 use anyhow::{Context, Result};
-use chrono::{DateTime, Utc};
+use chrono:: Utc;
 use atom_syndication::Feed as AtomFeed;
 use rss::Channel;
 use std::str::FromStr;
 
 use crate::models::Article;
 use crate::storage::Storage;
+use crate::utils;
 
 #[derive(Clone)]
 pub struct FeedManager {
@@ -104,8 +105,7 @@ impl FeedManager {
             let author = item.author().map(|s| s.to_string());
 
             let published = item.pub_date()
-                .and_then(|date| DateTime::parse_from_rfc2822(date).ok())
-                .map(|dt| dt.with_timezone(&Utc));
+                .and_then(|date| utils::time::parse_feed_time(date));
 
             let article = Article {
                 id: 0,
