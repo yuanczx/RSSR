@@ -6,9 +6,7 @@ import { useTranslation } from "react-i18next"
 interface ArticlePanelProps {
   title: string;
   articles: Article[];
-  filter: 'all' | 'unread';
   currentArticleId?: number;
-  onSetFilter: (filter: 'all' | 'unread') => void;
   onOpenArticle: (article: Article) => void;
   onRefresh: () => void;
   onMarkAllRead: () => void;
@@ -17,9 +15,7 @@ interface ArticlePanelProps {
 const ArticlePanel: React.FC<ArticlePanelProps> = ({
   title,
   articles,
-  filter,
   currentArticleId,
-  onSetFilter,
   onOpenArticle,
   onRefresh,
   onMarkAllRead,
@@ -51,43 +47,30 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
 
   return (
     <div className="panel">
-      <div className="panel-header">
-        <div className="panel-title">{title}</div>
-        <div className="panel-meta">
-          {articles.length} article{articles.length !== 1 ? 's' : ''}
+      <div className='panel-top'>
+        <div className="panel-header">
+          <div className="panel-title">{title}</div>
+          <div className="panel-meta">
+            {articles.length} article{articles.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+        <div className='panel-toolbar'>
+
+          <button
+            className="toolbar-btn"
+            onClick={onMarkAllRead}
+            title="Mark all as read">
+            {t("mark_read")}
+          </button>
+          <button
+            className="toolbar-btn"
+            onClick={onRefresh}
+            title="Refresh">
+            ↻
+          </button>
         </div>
       </div>
-      
-      <div className="panel-toolbar">
-        <button 
-          className={`toolbar-btn ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => onSetFilter('all')}
-        >
-          {t("all")}
-        </button>
-        <button 
-          className={`toolbar-btn ${filter === 'unread' ? 'active' : ''}`}
-          onClick={() => onSetFilter('unread')}
-        >
-          {t("unread")}
-        </button>
-        <div className="filter-spacer"></div>
-        <button 
-          className="toolbar-btn" 
-          onClick={onMarkAllRead}
-          title="Mark all as read"
-        >
-          {t("mark_read")}
-        </button>
-        <button 
-          className="toolbar-btn" 
-          onClick={onRefresh}
-          title="Refresh"
-        >
-          ↻
-        </button>
-      </div>
-      
+
       <div className="article-list">
         {articles.length === 0 ? (
           <div className="empty-state">

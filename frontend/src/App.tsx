@@ -55,7 +55,7 @@ function App() {
       await Promise.all([loadFeeds(), loadGroups(), loadStats()]);
       await loadArticles();
     } catch (e) {
-      showToast("Could not connect to API");
+      showToast(t("no_api"));
       console.error(e);
     }
   };
@@ -134,9 +134,6 @@ function App() {
     }));
   };
 
-  const setFilter = (filter: "all" | "unread") => {
-    setState((s) => ({ ...s, filter }));
-  };
 
   const toggleGroup = (groupId: number) => {
     setState((s) => ({
@@ -186,20 +183,20 @@ function App() {
       }));
       await loadStats();
     } catch (e) {
-      showToast("Failed to update");
+      showToast(t("update_failed"));
       console.error(e);
     }
   };
 
   const refreshFeed = async (feedId: number) => {
-    showToast("Refreshing…");
+    showToast(t("refreshing"));
     try {
       await api.feeds.update(feedId);
       await loadStats();
       await loadArticles();
-      showToast("Feed refreshed");
+      showToast(t("feed_refreshed"));
     } catch (e) {
-      showToast("Refresh failed");
+      showToast(t("refresh_failed"));
       console.error(e);
     }
   };
@@ -209,15 +206,15 @@ function App() {
       await api.feeds.markAllRead(feedId, true);
       await loadStats();
       await loadArticles();
-      showToast("Marked all as read");
+      showToast(t("mark_all_as_read"));
     } catch (e) {
-      showToast("Failed");
+      showToast(t("failed"));
       console.error(e);
     }
   };
 
   const deleteFeed = async (feedId: number) => {
-    if (!window.confirm("Delete this feed?")) return;
+    if (!window.confirm(t("delete_this_feed"))) return;
     try {
       await api.feeds.delete(feedId);
       await loadFeeds();
@@ -235,15 +232,15 @@ function App() {
   };
 
   const deleteGroup = async (groupId: number) => {
-    if (!window.confirm("Delete this group? Feeds will become ungrouped."))
+    if (!window.confirm(t("delete_this_group")))
       return;
     try {
       await api.groups.delete(groupId);
       await loadGroups();
       await loadFeeds();
-      showToast("Group deleted");
+      showToast(t("group_deleted"));
     } catch (e) {
-      showToast("Delete failed");
+      showToast(t("delete_failed"));
       console.error(e);
     }
   };
@@ -252,14 +249,14 @@ function App() {
     if (state.currentView === "feed" && state.currentFeedId) {
       await refreshFeed(state.currentFeedId);
     } else {
-      showToast("Refreshing all feeds…");
+      showToast(t("refreshing_all_feed"));
       try {
         await Promise.all(
-          state.feeds.map((f) => api.feeds.update(f.id).catch(() => {})),
+          state.feeds.map((f) => api.feeds.update(f.id).catch(() => { })),
         );
         await loadStats();
         await loadArticles();
-        showToast("All feeds refreshed");
+        showToast(t("all_feeds_refreshed"));
       } catch (e) {
         console.error(e);
       }
@@ -275,23 +272,23 @@ function App() {
       await api.feeds.markAllRead(feedId, true);
       await loadStats();
       await loadArticles();
-      showToast("Marked all as read");
+      showToast(t("mark_all_as_read"));
     } catch (e) {
-      showToast("Failed");
+      showToast(t("failed"));
       console.error(e);
     }
   };
 
   const handleAddFeed = async (url: string, groupId?: number) => {
     setShowFeedModal(false);
-    showToast("Adding feed…");
+    showToast(t("adding_feed"));
     try {
       await api.feeds.add(url, groupId);
       await loadFeeds();
       await loadStats();
-      showToast("Feed added!");
+      showToast(t("feed_added"));
     } catch (e) {
-      showToast("Failed to add feed");
+      showToast(t("failed_to_add_feed"));
       console.error(e);
     }
   };
@@ -301,9 +298,9 @@ function App() {
     try {
       await api.groups.create(name);
       await loadGroups();
-      showToast(`Group "${name}" created`);
+      showToast(t("group_created") + `:${name}`);
     } catch (e) {
-      showToast("Failed to create group");
+      showToast(t("failed_to_create_group"));
       console.error(e);
     }
   };
@@ -340,9 +337,7 @@ function App() {
       <ArticlePanel
         title={state.currentTitle}
         articles={state.articles}
-        filter={state.filter}
         currentArticleId={state.currentArticle?.id}
-        onSetFilter={setFilter}
         onOpenArticle={openArticle}
         onRefresh={refreshCurrentFeed}
         onMarkAllRead={markAllCurrentRead}
@@ -353,7 +348,7 @@ function App() {
         feedName={
           state.currentArticle
             ? state.feeds.find((f) => f.id === state.currentArticle!.feed_id)
-                ?.title || ""
+              ?.title || ""
             : ""
         }
         onToggleRead={toggleRead}
