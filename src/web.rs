@@ -44,20 +44,6 @@ struct ApiResponse<T> {
 pub async fn serve(storage: Storage, host: &str, port: u16) -> Result<()> {
     let feed_manager = FeedManager::new(storage);
 
-    use axum::http::Method;
-    use tower_http::cors::{Any, CorsLayer};
-
-    let cors = CorsLayer::new()
-        .allow_origin(Any) //NOTE Dev Env
-        .allow_methods([
-            Method::GET,
-            Method::POST,
-            Method::PUT,
-            Method::DELETE,
-            Method::OPTIONS,
-        ])
-        .allow_headers(Any);
-
     let app = Router::new()
         .route("/api/feeds", get(get_feeds_api))
         .route("/api/feeds", post(add_feed_api))
@@ -72,7 +58,6 @@ pub async fn serve(storage: Storage, host: &str, port: u16) -> Result<()> {
         .route("/api/articles/{id}/{action}", post(mark_article_read_api))
         .route("/api/feeds/{id}/{action}", post(mark_feed_read_api))
         .route("/api/stats", get(get_stats_api))
-        .layer(cors)
         .with_state(feed_manager)
         .fallback_service(ServeDir::new("frontend/dist"));
 
