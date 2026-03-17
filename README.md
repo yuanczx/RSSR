@@ -19,8 +19,8 @@ A modern RSS/Atom Reader built with Rust, featuring both a command-line interfac
 ### Build from Source
 
 ```bash
-git clone <repository-url> && cd rssr
-cd frontend && bun install && bun run build #build frontend
+git clone <repository-url>
+cd rssr
 cargo build --release
 ```
 

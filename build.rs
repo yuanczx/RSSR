@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 fn main() {
     if std::env::var("PROFILE").unwrap() != "release" {
@@ -16,8 +16,19 @@ fn main() {
 
     let bun =
         which::which("bun").expect("bun not found in PATH. Please install bun: https://bun.sh");
+    
+    if !Path::new("frontend/node_modules").exists() {
+        println!("cargo:warning=Installing frontend dependencies...");
+        let status = Command::new(&bun)
+            .args(["install"])
+            .current_dir("frontend")
+            .status()
+            .expect("failed to run bun install");
 
-    println!("Using bun at: {}", bun.display());
+        if !status.success() {
+            panic!("bun install failed");
+        }
+    }
 
     let status = Command::new(bun)
         .args(["run", "build"])
