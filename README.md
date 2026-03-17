@@ -96,11 +96,11 @@ The web server exposes the following REST API endpoints:
 
 - `GET /api/feeds` - Get all feeds
 - `POST /api/feeds` - Add a new feed
-- `DELETE /api/feeds/:id` - Delete a feed
-- `POST /api/feeds/:id/update` - Update a feed
+- `DELETE /api/feeds/{id}` - Delete a feed
+- `POST /api/feeds/{id}/update` - Update a feed
 - `GET /api/articles` - Get articles (supports `feed_id` and `unread_only` query params)
-- `POST /api/feeds/:id/:action` - Mark feed as read/unread
-- `POST /api/articles/:id/:action` - Mark article as read/unread
+- `POST /api/feeds/{id}/{action}` - Mark feed as read/unread
+- `POST /api/articles/{id}/{action}` - Mark article as read/unread
 - `GET /api/stats` - Get feed statistics
 
 

@@ -61,20 +61,20 @@ pub async fn serve(storage: Storage, host: &str, port: u16) -> Result<()> {
     let app = Router::new()
         .route("/api/feeds", get(get_feeds_api))
         .route("/api/feeds", post(add_feed_api))
-        .route("/api/feeds/:id", axum::routing::delete(delete_feed_api))
-        .route("/api/feeds/:id/update", post(update_feed_api))
-        .route("/api/feeds/:id/group", post(update_feed_group_api))
+        .route("/api/feeds/{id}", axum::routing::delete(delete_feed_api))
+        .route("/api/feeds/{id}/update", post(update_feed_api))
+        .route("/api/feeds/{id}/group", post(update_feed_group_api))
         .route("/api/groups", get(get_groups_api))
         .route("/api/groups", post(create_group_api))
-        .route("/api/groups/:id", axum::routing::delete(delete_group_api))
-        .route("/api/groups/:id", post(update_group_api))
+        .route("/api/groups/{id}", axum::routing::delete(delete_group_api))
+        .route("/api/groups/{id}", post(update_group_api))
         .route("/api/articles", get(get_articles_api))
-        .route("/api/articles/:id/:action", post(mark_article_read_api))
-        .route("/api/feeds/:id/:action", post(mark_feed_read_api))
+        .route("/api/articles/{id}/{action}", post(mark_article_read_api))
+        .route("/api/feeds/{id}/{action}", post(mark_feed_read_api))
         .route("/api/stats", get(get_stats_api))
         .layer(cors)
         .with_state(feed_manager)
-        .nest_service("/", ServeDir::new("frontend/dist"));
+        .fallback_service(ServeDir::new("frontend/dist"));
 
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", host, port)).await?;
     println!("Server running on http://{}:{}", host, port);
