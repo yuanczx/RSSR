@@ -6,6 +6,8 @@ import AddFeedModal from "./components/Modal/AddFeedModal";
 import AddGroupModal from "./components/Modal/AddGroupModal";
 import ContextMenu from "./components/ContextMenu/ContextMenu";
 import Toast from "./components/Toast/Toast";
+import Settings from "./components/Setting/Settings";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import type { AppState, Feed, Group, Article, FeedStats } from "./types";
 import { api } from "./api";
 import "./styles/global.css";
@@ -39,6 +41,7 @@ function App() {
     message: "",
     show: false,
   });
+  const [showSettings, setShowSettings] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -319,7 +322,7 @@ function App() {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <Sidebar
         feeds={state.feeds}
         groups={state.groups}
@@ -332,6 +335,7 @@ function App() {
         onAddFeed={() => setShowFeedModal(true)}
         onAddGroup={() => setShowGroupModal(true)}
         onContextMenu={handleContextMenu}
+        onSettings={()=>setShowSettings(true)}
       />
 
       <ArticlePanel
@@ -394,8 +398,12 @@ function App() {
         />
       )}
 
+      {showSettings && (
+        <Settings onClose={() => setShowSettings(false)} />
+      )}
+
       <Toast message={toast.message} show={toast.show} />
-    </>
+    </ThemeProvider>
   );
 }
 

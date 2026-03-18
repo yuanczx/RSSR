@@ -21,13 +21,13 @@
 
 .panel-title {
   font-family: 'Playfair Display', serif;
-  font-size: 19px;
+  font-size: var(--font-xl);
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
 .panel-meta {
-  font-size: 11px;
+  font-size: var(--font-xs);
   color: var(--ink-3);
   margin-top: 3px;
 }
@@ -46,7 +46,7 @@
   border: 1px solid var(--paper-3);
   color: var(--ink-2);
   font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-size: var(--font-md);
   font-weight: 500;
   padding: 5px 12px;
   border-radius: 20px;
@@ -69,7 +69,7 @@
   padding: 32px 20px;
   text-align: center;
   color: var(--ink-3);
-  font-size: 13px;
+  font-size: var(--font-base);
 }
 
 .article-item {
@@ -114,7 +114,7 @@
 .article-item:not(.unread) .unread-dot { display: none; }
 
 .article-feed-name {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -133,7 +133,7 @@
 }
 
 .article-item-title {
-  font-size: 13.5px;
+  font-size: var(--font-base);
   line-height: 1.4;
   display: -webkit-box;
   line-clamp: 2;

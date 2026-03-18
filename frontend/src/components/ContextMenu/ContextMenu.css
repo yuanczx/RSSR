@@ -12,7 +12,7 @@
 
 .ctx-item {
   padding: 8px 14px;
-  font-size: 13px;
+  font-size: var(--font-base);
   display: flex;
   align-items: center;
   gap: 8px;

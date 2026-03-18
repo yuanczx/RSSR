@@ -2,6 +2,7 @@ import React from 'react';
 import type { Feed, Group, FeedStats } from '../../types';
 import './Sidebar.css';
 import { useTranslation } from "react-i18next";
+import { IoIosSettings } from "react-icons/io";
 
 interface SidebarProps {
   feeds: Feed[];
@@ -15,6 +16,7 @@ interface SidebarProps {
   onAddFeed: () => void;
   onAddGroup: () => void;
   onContextMenu: (e: React.MouseEvent, type: 'feed' | 'group', data: Feed | Group) => void;
+  onSettings: () => void; // 新增
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -29,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAddFeed,
   onAddGroup,
   onContextMenu,
+  onSettings, // 新增
 }) => {
   const { t } = useTranslation()
   const totalUnread = Object.values(feedStats).reduce((sum, stats) => sum + (stats.unread_count || 0), 0);
@@ -169,6 +172,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             </React.Fragment>
           );
         })}
+      </div>
+
+      {/* 新增 Settings 按钮 */}
+      <div className="sidebar-footer">
+        <button className="btn-settings" onClick={onSettings} title={t('settings')}>
+          <IoIosSettings className='settings-icon'/>
+        </button>
       </div>
     </nav>
   );

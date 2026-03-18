@@ -32,14 +32,14 @@
 
 .modal-title {
   font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-size: var(--font-xl);
   margin-bottom: 20px;
   color: var(--ink);
 }
 
 .modal label {
   display: block;
-  font-size: 12px;
+  font-size: var(--font-sm);
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -55,7 +55,7 @@
   border-radius: 7px;
   padding: 10px 14px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-size: var(--font-md);
   color: var(--ink);
   outline: none;
   transition: border-color 0.15s;

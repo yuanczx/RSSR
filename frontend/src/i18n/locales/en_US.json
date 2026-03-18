@@ -43,5 +43,20 @@
     "mark_all_read": "Mark all as read",
     "delete": "Delete",
     "feed": "Feed",
-    "group": "Group"
+    "group": "Group",
+    "settings": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "font_size": "Font Size",
+    "language": "Language",
+    "select_language": "Select Language",
+    "reading": "Reading",
+    "auto_refresh": "Auto refresh",
+    "refresh_interval": "Refresh interval",
+    "show_read_articles": "Show read articles",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
 }

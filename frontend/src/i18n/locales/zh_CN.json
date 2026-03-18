@@ -43,5 +43,20 @@
     "mark_all_read": "标记已读",
     "delete": "删除",
     "feed": "订阅",
-    "group": "分组"
+    "group": "分组",
+    "settings": "设置",
+    "appearance": "外观",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "font_size": "字体大小",
+    "language": "语言",
+    "select_language": "选择语言",
+    "reading": "阅读",
+    "auto_refresh": "自动刷新",
+    "refresh_interval": "刷新间隔",
+    "show_read_articles": "显示已读文章",
+    "small":"小",
+    "medium":"中",
+    "large":"大"
 }
