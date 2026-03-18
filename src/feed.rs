@@ -100,8 +100,12 @@ impl FeedManager {
                 .unwrap_or("")
                 .to_string();
 
-            let description = item.description().map(|s| s.to_string());
-            let content = item.content().map(|s| s.to_string());
+            let description = item
+                .description()
+                .map(|s| utils::resolve_relative_urls(s, &link));
+            let content = item
+                .content()
+                .map(|s| utils::resolve_relative_urls(s, &link));
             let author = item.author().map(|s| s.to_string());
 
             let published = item.pub_date()
@@ -142,19 +146,21 @@ impl FeedManager {
             // Atom uses summary or content
             let description = entry
                 .summary()
-                .map(|s| s.value.clone())
+                .map(|s| utils::resolve_relative_urls(&s.value, &link))
                 .or_else(|| {
                     entry.content().and_then(|c| {
-                        c.value().map(|v| v.to_string())
-                            .or_else(|| c.src().map(|s| s.to_string()))
+                        c.value()
+                            .map(|v| utils::resolve_relative_urls(v, &link))
+                            .or_else(|| c.src().map(|s| utils::resolve_relative_urls(s, &link)))
                     })
                 });
 
             let content = entry
                 .content()
                 .and_then(|c| {
-                    c.value().map(|v| v.to_string())
-                        .or_else(|| c.src().map(|s| s.to_string()))
+                    c.value()
+                        .map(|v| utils::resolve_relative_urls(v, &link))
+                        .or_else(|| c.src().map(|s| utils::resolve_relative_urls(s, &link)))
                 });
 
             // Atom authors are a vector
