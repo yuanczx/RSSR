@@ -1,7 +1,7 @@
 # RSS Reader (RSSR)
 
 A modern RSS/Atom Reader built with Rust, featuring both a command-line interface (CLI) and web UI.
-![webui](docs/readme/webui)
+![webui](docs/readme/webui.png)
 
 ## Features
 
