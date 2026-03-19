@@ -54,5 +54,9 @@ pub fn parse_feed_time(date: &str) -> Option<DateTime<Utc>> {
         return Some(dt.with_timezone(&Utc));
     }
 
+    if let Ok(dt) = DateTime::parse_from_str(date, "%Y-%m-%d %H:%M:%S %z") {
+        return Some(dt.with_timezone(&Utc));
+    }
+
     None
 }

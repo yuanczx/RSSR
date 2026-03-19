@@ -106,7 +106,7 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
           <div 
             className="reader-body"
             dangerouslySetInnerHTML={{ 
-              __html: article.content || article.summary || 
+              __html: article.content || article.description || article.summary || 
                 '<p style="color:var(--ink-3)">No content available. Open the original article to read more.</p>' 
             }}
           />

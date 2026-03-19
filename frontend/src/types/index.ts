@@ -18,6 +18,7 @@ export interface Article {
   id: number;
   feed_id: number;
   title: string;
+  description?: string,
   content?: string;
   summary?: string;
   url?: string;

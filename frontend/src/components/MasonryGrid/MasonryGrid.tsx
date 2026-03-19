@@ -79,9 +79,9 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ items, onItemClick }) => {
   );
 };
 
-export function extractMediaFromArticle(article: { content?: string; summary?: string }): MediaItem[] {
+export function extractMediaFromArticle(article: { content?: string; description?:string, summary?: string }): MediaItem[] {
   const items: MediaItem[] = [];
-  const html = article.content || article.summary || '';
+  const html = article.content || article.description || article.summary || '';
   
   const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
   let match;
