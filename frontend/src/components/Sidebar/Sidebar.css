@@ -129,12 +129,37 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 20px;
+  padding: 6px 8px 6px 20px;
   cursor: pointer;
   transition: background 0.12s;
+  flex: 1;
 }
 
 .group-toggle:hover { background: rgba(0,0,0,0.04); }
+
+.media-mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink-3);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.media-mode-btn:hover {
+  background: rgba(0,0,0,0.08);
+  color: var(--ink-2);
+}
+
+.media-mode-btn.active {
+  color: var(--accent);
+}
 
 .group-name {
   font-size: var(--font-sm);
@@ -153,6 +178,13 @@
 }
 
 .group-chevron.open { transform: rotate(90deg); }
+
+.group-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+}
 
 .group-container {
   padding-left: 10px;

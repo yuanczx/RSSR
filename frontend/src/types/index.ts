@@ -10,6 +10,7 @@ export interface Feed {
 export interface Group {
   id: number;
   name: string;
+  is_media: boolean;
   created_at: string;
 }
 
@@ -36,7 +37,7 @@ export interface AppState {
   groups: Group[];
   articles: Article[];
   feedStats: Record<number, FeedStats>;
-  currentView: 'all' | 'unread' | 'feed';
+  currentView: 'all' | 'unread' | 'feed' | 'group' | 'media';
   currentFeedId: number | null;
   currentGroupId: number | null;
   currentTitle: string;
@@ -45,4 +46,4 @@ export interface AppState {
   groupExpanded: Record<number, boolean>;
 }
 
-export type ViewType = 'all' | 'unread' | 'feed';
+export type ViewType = 'all' | 'unread' | 'feed' | 'group' | 'media';

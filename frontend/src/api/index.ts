@@ -44,6 +44,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ name }),
       }),
+    updateMedia: (id: number, isMedia: boolean) =>
+      apiFetch(`/groups/${id}`, {
+        method: "POST",
+        body: JSON.stringify({ name: "", is_media: isMedia }),
+      }),
   },
   articles: {
     getAll: (feedId?: number, unreadOnly: boolean = false) => {

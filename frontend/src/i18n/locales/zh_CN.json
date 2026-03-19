@@ -58,5 +58,15 @@
     "show_read_articles": "显示已读文章",
     "small":"小",
     "medium":"中",
-    "large":"大"
+    "large":"大",
+    "set_as_media": "设为媒体分组",
+    "remove_media_mode": "取消媒体模式",
+    "group_marked_media": "已设为媒体分组",
+    "group_unmarked_media": "已取消媒体模式",
+    "media_mode": "媒体模式",
+    "close_preview": "关闭预览",
+    "move_to_group": "移动到分组",
+    "feed_moved_to": "订阅已移动到",
+    "feed_removed_from_group": "订阅已移出分组",
+    "no_other_groups": "没有其他分组"
 }

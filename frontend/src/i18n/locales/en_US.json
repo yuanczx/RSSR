@@ -58,5 +58,15 @@
     "show_read_articles": "Show read articles",
     "small": "Small",
     "medium": "Medium",
-    "large": "Large"
+    "large": "Large",
+    "set_as_media": "Set as Media Group",
+    "remove_media_mode": "Remove Media Mode",
+    "group_marked_media": "Group set as media mode",
+    "group_unmarked_media": "Media mode removed",
+    "media_mode": "Media Mode",
+    "close_preview": "Close Preview",
+    "move_to_group": "Move to Group",
+    "feed_moved_to": "Feed moved to",
+    "feed_removed_from_group": "Feed removed from group",
+    "no_other_groups": "No other groups"
 }

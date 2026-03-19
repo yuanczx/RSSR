@@ -1,0 +1,22 @@
+.media-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.panel-top {
+  background: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.panel-header {
+  border: none;
+  background: none;
+}
+
+.panel-toolbar {
+  border: none;
+  background: none;
+}

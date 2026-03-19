@@ -27,6 +27,7 @@ struct CreateGroupRequest {
 #[derive(Deserialize)]
 struct UpdateGroupRequest {
     name: String,
+    is_media: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -286,17 +287,32 @@ async fn update_group_api(
     Path(id): Path<i64>,
     Json(req): Json<UpdateGroupRequest>,
 ) -> Json<ApiResponse<()>> {
-    match feed_manager.storage().update_group_name(id, req.name).await {
-        Ok(_) => Json(ApiResponse {
-            success: true,
-            data: Some(()),
-            error: None,
-        }),
-        Err(e) => Json(ApiResponse {
-            success: false,
-            data: None,
-            error: Some(e.to_string()),
-        }),
+    if let Some(is_media) = req.is_media {
+        match feed_manager.storage().update_group_media(id, is_media).await {
+            Ok(_) => Json(ApiResponse {
+                success: true,
+                data: Some(()),
+                error: None,
+            }),
+            Err(e) => Json(ApiResponse {
+                success: false,
+                data: None,
+                error: Some(e.to_string()),
+            }),
+        }
+    } else {
+        match feed_manager.storage().update_group_name(id, req.name).await {
+            Ok(_) => Json(ApiResponse {
+                success: true,
+                data: Some(()),
+                error: None,
+            }),
+            Err(e) => Json(ApiResponse {
+                success: false,
+                data: None,
+                error: Some(e.to_string()),
+            }),
+        }
     }
 }
 

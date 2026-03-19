@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import ArticlePanel from "./components/ArticlePanel/ArticlePanel";
 import Reader from "./components/Reader/Reader";
+import MediaPanel from "./components/MediaPanel/MediaPanel";
+import { extractMediaFromArticle } from "./components/MasonryGrid/MasonryGrid";
+import type { MediaItem } from "./components/MasonryGrid/MasonryGrid";
+import MediaPreview from "./components/MediaPanel/MediaPreview";
 import AddFeedModal from "./components/Modal/AddFeedModal";
 import AddGroupModal from "./components/Modal/AddGroupModal";
 import ContextMenu from "./components/ContextMenu/ContextMenu";
@@ -42,6 +46,7 @@ function App() {
     show: false,
   });
   const [showSettings, setShowSettings] = useState(false);
+  const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -124,14 +129,16 @@ function App() {
   };
 
   const selectView = (
-    type: "all" | "unread" | "feed",
+    type: "all" | "unread" | "feed" | "group" | "media",
     title: string,
     feedId?: number,
+    groupId?: number,
   ) => {
     setState((s) => ({
       ...s,
       currentView: type,
       currentFeedId: feedId || null,
+      currentGroupId: groupId || null,
       currentTitle: title,
       currentArticle: null,
     }));
@@ -248,6 +255,29 @@ function App() {
     }
   };
 
+  const toggleGroupMedia = async (groupId: number, currentIsMedia: boolean) => {
+    try {
+      await api.groups.updateMedia(groupId, !currentIsMedia);
+      await loadGroups();
+      showToast(!currentIsMedia ? t("group_marked_media") : t("group_unmarked_media"));
+    } catch (e) {
+      showToast(t("update_failed"));
+      console.error(e);
+    }
+  };
+
+  const moveFeedToGroup = async (feedId: number, groupId: number | null) => {
+    try {
+      await api.feeds.updateGroup(feedId, groupId || undefined);
+      await loadFeeds();
+      const groupName = groupId ? state.groups.find(g => g.id === groupId)?.name : null;
+      showToast(groupName ? t("feed_moved_to") + `: ${groupName}` : t("feed_removed_from_group"));
+    } catch (e) {
+      showToast(t("update_failed"));
+      console.error(e);
+    }
+  };
+
   const refreshCurrentFeed = async () => {
     if (state.currentView === "feed" && state.currentFeedId) {
       await refreshFeed(state.currentFeedId);
@@ -321,6 +351,25 @@ function App() {
     setContextMenu(null);
   };
 
+  const mediaItems = useMemo(() => {
+    if (state.currentView !== 'media' || !state.currentGroupId) return [];
+
+    const groupFeeds = state.feeds.filter(f => f.group_id === state.currentGroupId);
+    const feedIds = new Set(groupFeeds.map(f => f.id));
+
+    const items: MediaItem[] = [];
+    state.articles
+      .filter(a => feedIds.has(a.feed_id))
+      .forEach(article => {
+        const media = extractMediaFromArticle(article);
+        media.forEach(m => {
+          items.push({ ...m, articleId: article.id });
+        });
+      });
+
+    return items;
+  }, [state.currentView, state.currentGroupId, state.feeds, state.articles]);
+
   return (
     <ThemeProvider>
       <Sidebar
@@ -329,34 +378,46 @@ function App() {
         feedStats={state.feedStats}
         currentView={state.currentView}
         currentFeedId={state.currentFeedId}
+        currentGroupId={state.currentGroupId}
         groupExpanded={state.groupExpanded}
         onSelectView={selectView}
         onToggleGroup={toggleGroup}
         onAddFeed={() => setShowFeedModal(true)}
         onAddGroup={() => setShowGroupModal(true)}
         onContextMenu={handleContextMenu}
-        onSettings={()=>setShowSettings(true)}
+        onSettings={() => setShowSettings(true)}
       />
 
-      <ArticlePanel
-        title={state.currentTitle}
-        articles={state.articles}
-        currentArticleId={state.currentArticle?.id}
-        onOpenArticle={openArticle}
-        onRefresh={refreshCurrentFeed}
-        onMarkAllRead={markAllCurrentRead}
-      />
+      {state.currentView === 'media' ? (
+        <MediaPanel
+          title={state.currentTitle}
+          items={mediaItems}
+          onRefresh={refreshCurrentFeed}
+          onItemClick={(item) => setPreviewItem(item)}
+        />
+      ) : (
+        <>
+          <ArticlePanel
+            title={state.currentTitle}
+            articles={state.articles}
+            currentArticleId={state.currentArticle?.id}
+            onOpenArticle={openArticle}
+            onRefresh={refreshCurrentFeed}
+            onMarkAllRead={markAllCurrentRead}
+          />
 
-      <Reader
-        article={state.currentArticle}
-        feedName={
-          state.currentArticle
-            ? state.feeds.find((f) => f.id === state.currentArticle!.feed_id)
-              ?.title || ""
-            : ""
-        }
-        onToggleRead={toggleRead}
-      />
+          <Reader
+            article={state.currentArticle}
+            feedName={
+              state.currentArticle
+                ? state.feeds.find((f) => f.id === state.currentArticle!.feed_id)
+                  ?.title || ""
+                : ""
+            }
+            onToggleRead={toggleRead}
+          />
+        </>
+      )}
 
       {showFeedModal && (
         <AddFeedModal
@@ -379,6 +440,7 @@ function App() {
           y={contextMenu.y}
           type={contextMenu.type}
           data={contextMenu.data}
+          groups={state.groups}
           onClose={closeContextMenu}
           onRefresh={
             contextMenu.type === "feed"
@@ -388,6 +450,16 @@ function App() {
           onMarkAllRead={
             contextMenu.type === "feed"
               ? () => markFeedRead((contextMenu.data as Feed).id)
+              : undefined
+          }
+          onToggleMedia={
+            contextMenu.type === "group"
+              ? () => toggleGroupMedia((contextMenu.data as Group).id, (contextMenu.data as Group).is_media)
+              : undefined
+          }
+          onMoveToGroup={
+            contextMenu.type === "feed"
+              ? (groupId) => moveFeedToGroup((contextMenu.data as Feed).id, groupId)
               : undefined
           }
           onDelete={
@@ -400,6 +472,15 @@ function App() {
 
       {showSettings && (
         <Settings onClose={() => setShowSettings(false)} />
+      )}
+
+      {previewItem && (
+        <MediaPreview
+          src={previewItem.src}
+          type={previewItem.type}
+          title={previewItem.title || state.articles.find(a => a.id === previewItem.articleId)?.title}
+          onClose={() => setPreviewItem(null)}
+        />
       )}
 
       <Toast message={toast.message} show={toast.show} />

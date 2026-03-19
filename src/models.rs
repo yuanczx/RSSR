@@ -17,6 +17,7 @@ pub struct Feed {
 pub struct Group {
     pub id: i64,
     pub name: String,
+    pub is_media: bool,
     pub created_at: DateTime<Utc>,
 }
 

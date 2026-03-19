@@ -3,20 +3,22 @@ import type { Feed, Group, FeedStats } from '../../types';
 import './Sidebar.css';
 import { useTranslation } from "react-i18next";
 import { IoIosSettings } from "react-icons/io";
+import { IoMdImages } from "react-icons/io";
 
 interface SidebarProps {
   feeds: Feed[];
   groups: Group[];
   feedStats: Record<number, FeedStats>;
-  currentView: 'all' | 'unread' | 'feed';
+  currentView: 'all' | 'unread' | 'feed' | 'group' | 'media';
   currentFeedId: number | null;
+  currentGroupId: number | null;
   groupExpanded: Record<number, boolean>;
-  onSelectView: (type: 'all' | 'unread' | 'feed', title: string, feedId?: number) => void;
+  onSelectView: (type: 'all' | 'unread' | 'feed' | 'group' | 'media', title: string, feedId?: number, groupId?: number) => void;
   onToggleGroup: (groupId: number) => void;
   onAddFeed: () => void;
   onAddGroup: () => void;
   onContextMenu: (e: React.MouseEvent, type: 'feed' | 'group', data: Feed | Group) => void;
-  onSettings: () => void; // 新增
+  onSettings: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -25,13 +27,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   feedStats,
   currentView,
   currentFeedId,
+  currentGroupId,
   groupExpanded,
   onSelectView,
   onToggleGroup,
   onAddFeed,
   onAddGroup,
   onContextMenu,
-  onSettings, // 新增
+  onSettings,
 }) => {
   const { t } = useTranslation()
   const totalUnread = Object.values(feedStats).reduce((sum, stats) => sum + (stats.unread_count || 0), 0);
@@ -126,24 +129,44 @@ const Sidebar: React.FC<SidebarProps> = ({
           
           return (
             <React.Fragment key={group.id}>
-              <div 
-                className="group-toggle"
-                onClick={() => onToggleGroup(group.id)}
-                onContextMenu={(e) => onContextMenu(e, 'group', group)}
-              >
-                <svg 
-                  className={`group-chevron ${expanded ? 'open' : ''}`} 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
+              <div className="group-row">
+                <div 
+                  className="group-toggle"
+                  onClick={(e) => {
+                    if (e.shiftKey && group.is_media) {
+                      onSelectView('media', group.name, undefined, group.id);
+                    } else {
+                      onToggleGroup(group.id);
+                    }
+                  }}
+                  onContextMenu={(e) => onContextMenu(e, 'group', group)}
                 >
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-                <span className="group-name">{group.name}</span>
+                  <svg 
+                    className={`group-chevron ${expanded ? 'open' : ''}`} 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                  <span className="group-name">{group.name}</span>
+                {group.is_media && (
+                  <button 
+                    className={`media-mode-btn ${currentView === 'media' && currentGroupId === group.id ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectView('media', group.name, undefined, group.id);
+                    }}
+                    title={t("media_mode")}
+                  >
+                    <IoMdImages size={14} />
+                  </button>
+                )}
               </div>
+                </div>
               
               <div className="group-container" style={{ display: expanded ? 'block' : 'none' }}>
                 {feedsInGroup.map(feed => (

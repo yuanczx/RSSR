@@ -27,12 +27,26 @@ impl Storage {
             CREATE TABLE IF NOT EXISTS groups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
+                is_media BOOLEAN NOT NULL DEFAULT 0,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
             "#,
         )
         .execute(&self.pool)
         .await?;
+
+        // Migration: add is_media column if it doesn't exist
+        match sqlx::query(
+            r#"
+            ALTER TABLE groups ADD COLUMN is_media INTEGER NOT NULL DEFAULT 0
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        {
+            Ok(_) | Err(sqlx::Error::Database(_)) => {}
+            Err(e) => return Err(e.into()),
+        }
 
         // Create feeds table (with migration for group_id)
         sqlx::query(
@@ -306,8 +320,8 @@ impl Storage {
     pub async fn create_group(&self, name: String) -> Result<i64> {
         let id = sqlx::query_scalar::<_, i64>(
             r#"
-            INSERT INTO groups (name)
-            VALUES (?1)
+            INSERT INTO groups (name, is_media)
+            VALUES (?1, 0)
             RETURNING id
             "#,
         )
@@ -318,10 +332,26 @@ impl Storage {
         Ok(id)
     }
 
+    pub async fn update_group_media(&self, id: i64, is_media: bool) -> Result<()> {
+        sqlx::query(
+            r#"
+            UPDATE groups
+            SET is_media = ?1
+            WHERE id = ?2
+            "#,
+        )
+        .bind(is_media)
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn get_groups(&self) -> Result<Vec<Group>> {
         let groups = sqlx::query_as::<_, Group>(
             r#"
-            SELECT id, name, created_at
+            SELECT id, name, is_media, created_at
             FROM groups
             ORDER BY name ASC
             "#,
