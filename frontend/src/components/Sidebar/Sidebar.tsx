@@ -168,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
                 </div>
               
-              <div className="group-container" style={{ display: expanded ? 'block' : 'none' }}>
+              <div className={`group-container ${expanded ? 'expanded' : ''}`}>
                 {feedsInGroup.map(feed => (
                   <div
                     key={feed.id}
