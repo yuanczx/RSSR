@@ -24,6 +24,36 @@ struct FeedMetadata {
     description: Option<String>,
 }
 
+fn is_safe_url(url: &str) -> bool {
+    match url::Url::parse(url) {
+        Ok(parsed) => {
+            let scheme = parsed.scheme().to_lowercase();
+            // Only allow http and https
+            if scheme != "http" && scheme != "https" {
+                return false;
+            }
+            let host = parsed.host_str().unwrap_or("").to_lowercase();
+            // Block private/internal addresses
+            let is_private = host == "localhost"
+                || host.starts_with("127.")
+                || host.starts_with("10.")
+                || host.starts_with("192.168.")
+                || host.starts_with("172.16.")
+                || host.starts_with("172.17.")
+                || host.starts_with("172.18.")
+                || host.starts_with("172.19.")
+                || host.starts_with("172.2")
+                || host.starts_with("172.30.")
+                || host.starts_with("172.31.")
+                || host.starts_with("169.254.") // link-local
+                || host.starts_with("0.")
+                || host.ends_with(".local");
+            !is_private
+        }
+        Err(_) => false,
+    }
+}
+
 impl FeedManager {
     pub fn new(storage: Storage) -> Self {
         FeedManager { storage }
@@ -31,7 +61,7 @@ impl FeedManager {
 
     fn detect_feed_format(&self, content: &str) -> FeedFormat {
         // Check for Atom format (starts with <feed or contains xmlns="http://www.w3.org/2005/Atom")
-        if content.trim_start().starts_with("<feed") 
+        if content.trim_start().starts_with("<feed")
             || content.contains("xmlns=\"http://www.w3.org/2005/Atom\"")
             || content.contains("xmlns='http://www.w3.org/2005/Atom'") {
             FeedFormat::Atom
@@ -42,6 +72,10 @@ impl FeedManager {
     }
 
     pub async fn fetch_feed_content(&self, url: &str) -> Result<String> {
+        if !is_safe_url(url) {
+            return Err(anyhow::anyhow!("URL is not safe"));
+        }
+
         let response = reqwest::get(url)
             .await
             .context("Failed to fetch feed")?;

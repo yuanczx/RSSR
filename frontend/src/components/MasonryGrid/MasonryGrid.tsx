@@ -119,9 +119,6 @@ export function extractMediaFromArticle(article: { content?: string; description
   while ((match = videoRegex.exec(html)) !== null) {
     const src = match[1] || match[2];
     if (src) {
-      const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
-      const isVimeo = src.includes('vimeo.com');
-      
       items.push({
         id: Math.random(),
         type: 'video',
