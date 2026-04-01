@@ -10,6 +10,7 @@ interface ArticlePanelProps {
   onOpenArticle: (article: Article) => void;
   onRefresh: () => void;
   onMarkAllRead: () => void;
+  onBack?: () => void;
 }
 
 const ArticlePanel: React.FC<ArticlePanelProps> = ({
@@ -19,6 +20,7 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
   onOpenArticle,
   onRefresh,
   onMarkAllRead,
+  onBack,
 }) => {
   const formatDate = (iso: string) => {
     try {
@@ -49,6 +51,11 @@ const ArticlePanel: React.FC<ArticlePanelProps> = ({
     <div className="panel">
       <div className='panel-top'>
         <div className="panel-header">
+          {onBack && (
+            <button className="panel-back-btn" onClick={onBack}>
+              ← Back
+            </button>
+          )}
           <div className="panel-title">{title}</div>
           <div className="panel-meta">
             {articles.length} article{articles.length !== 1 ? 's' : ''}

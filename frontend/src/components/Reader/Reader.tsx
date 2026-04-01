@@ -7,9 +7,10 @@ interface ReaderProps {
   article: Article | null;
   feedName: string;
   onToggleRead: (articleId: number) => void;
+  onBack?: () => void;
 }
 
-const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
+const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead, onBack }) => {
   const { t } = useTranslation()
   const formatDate = (iso: string) => {
     try {
@@ -61,8 +62,13 @@ const Reader: React.FC<ReaderProps> = ({ article, feedName, onToggleRead }) => {
     <div className="reader">
       <div className="reader-pane">
         <div className="reader-topbar">
-          <button 
-            className="reader-topbar-btn" 
+          {onBack && (
+            <button className="reader-back-btn" onClick={onBack}>
+              ← Back
+            </button>
+          )}
+          <button
+            className="reader-topbar-btn"
             onClick={() => onToggleRead(article.id)}
           >
             {article.read ? t('mark_unread') : t('mark_read')}

@@ -141,3 +141,26 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.panel-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: var(--font-base);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.panel-back-btn:hover {
+  background: var(--paper-3);
+}
+
+@media (max-width: 768px) {
+  .panel-back-btn {
+    display: inline-block;
+  }
+}

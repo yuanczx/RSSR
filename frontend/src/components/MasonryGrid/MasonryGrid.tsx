@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import './MasonryGrid.css';
 
 interface MediaItem {
@@ -16,13 +16,31 @@ interface MasonryGridProps {
 }
 
 const MasonryGrid: React.FC<MasonryGridProps> = ({ items, onItemClick }) => {
+  const [columnCount, setColumnCount] = useState(4);
+
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width <= 480) {
+        setColumnCount(2);
+      } else if (width <= 768) {
+        setColumnCount(3);
+      } else {
+        setColumnCount(4);
+      }
+    };
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
   const columns = useMemo(() => {
-    const cols: MediaItem[][] = [[], [], [], []];
+    const cols: MediaItem[][] = Array.from({ length: columnCount }, () => []);
     items.forEach((item, index) => {
-      cols[index % 4].push(item);
+      cols[index % columnCount].push(item);
     });
     return cols;
-  }, [items]);
+  }, [items, columnCount]);
 
   if (items.length === 0) {
     return (
