@@ -1,4 +1,4 @@
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, FixedOffset, Utc, NaiveDateTime};
 
 pub fn relative_time(dt: DateTime<Utc>, timezone: &str) -> String {
     let offset = parse_timezone(timezone);
@@ -56,6 +56,10 @@ pub fn parse_feed_time(date: &str) -> Option<DateTime<Utc>> {
 
     if let Ok(dt) = DateTime::parse_from_str(date, "%Y-%m-%d %H:%M:%S %z") {
         return Some(dt.with_timezone(&Utc));
+    }
+
+    if let Ok(dt) = NaiveDateTime::parse_from_str(date, "%Y-%m-%d %H:%M:%S") {
+        return Some(DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc));
     }
 
     None
