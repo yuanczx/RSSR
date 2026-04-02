@@ -93,38 +93,38 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       )}
 
       {type === "feed" && onMoveToGroup && (
-        <div 
+        <div
           className="ctx-item has-submenu"
           onMouseEnter={() => setShowGroupSubmenu(true)}
           onMouseLeave={() => setShowGroupSubmenu(false)}
-          ref={submenuRef}
         >
           <IoMdArrowForward size={16} />
           <span>{t("move_to_group")}</span>
-          {showGroupSubmenu && (
-            <div className="ctx-submenu">
-              <div 
-                className={`ctx-item ${currentGroupId === null ? 'active' : ''}`}
-                onClick={(e) => { e.stopPropagation(); handleItemClick(() => onMoveToGroup?.(null)); }}
-              >
-                <span>{t("no_group")}</span>
-              </div>
-              {availableGroups.map(group => (
-                <div 
-                  key={group.id}
-                  className={`ctx-item ${currentGroupId === group.id ? 'active' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleItemClick(() => onMoveToGroup?.(group.id)); }}
-                >
-                  <span>{group.name}</span>
-                </div>
-              ))}
-              {availableGroups.length === 0 && (
-                <div className="ctx-item disabled">
-                  <span>{t("no_other_groups")}</span>
-                </div>
-              )}
+          <div
+            className={`ctx-submenu${showGroupSubmenu ? " submenu-visible" : ""}`}
+            ref={submenuRef}
+          >
+            <div
+              className={`ctx-item ${currentGroupId === null ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); handleItemClick(() => onMoveToGroup?.(null)); }}
+            >
+              <span>{t("no_group")}</span>
             </div>
-          )}
+            {availableGroups.map(group => (
+              <div
+                key={group.id}
+                className={`ctx-item ${currentGroupId === group.id ? 'active' : ''}`}
+                onClick={(e) => { e.stopPropagation(); handleItemClick(() => onMoveToGroup?.(group.id)); }}
+              >
+                <span>{group.name}</span>
+              </div>
+            ))}
+            {availableGroups.length === 0 && (
+              <div className="ctx-item disabled">
+                <span>{t("no_other_groups")}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

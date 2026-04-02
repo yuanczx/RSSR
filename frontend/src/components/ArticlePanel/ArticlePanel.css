@@ -16,7 +16,12 @@
 }
 
 .panel-header {
-  padding: 20px 20px 16px;
+  padding: 16px 24px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
   border-bottom: 1px solid var(--paper-3);
   background: var(--paper-2);
   position: relative;

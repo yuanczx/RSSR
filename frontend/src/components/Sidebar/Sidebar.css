@@ -10,10 +10,17 @@
 }
 
 .sidebar-header {
-  padding: 28px 24px 20px;
+  padding: 0 24px;
+  height: 57px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2px;
   border-bottom: 1px solid var(--paper-3);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar-header::after {
@@ -209,7 +216,7 @@
   margin: 2px 8px 2px 0;
 }
 
-.group-toggle:hover {
+.group-row:hover {
   background: var(--paper-2);
 }
 
