@@ -2,7 +2,7 @@
 
 A fast, modern RSS and Atom feed reader built with Rust, featuring both a command-line interface and a responsive web UI.
 
-![Web UI](docs/readme/webui.png)
+![Web UI](docs/imgs/webui.png)
 
 ## Tech Stack
 

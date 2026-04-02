@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSSR — Fast, Local RSS/Atom Reader</title>
+  <meta name="description" content="A modern RSS and Atom feed reader with CLI and web UI — single binary, zero config, all local.">
+  <style>
+    :root {
+      --bg: #fafbfc;
+      --bg-card: #ffffff;
+      --border: #e8eaed;
+      --text: #1a1a2e;
+      --text-dim: #6b7080;
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.08);
+      --mono: ui-monospace, SFMono-Regular, 'CaskaydiaCove Nerd Font', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+      --font: 'Inter', system-ui, -apple-system, Helvetica, Arial, sans-serif;
+      --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 20px rgba(0,0,0,0.08), 0 6px 12px -2px rgba(0,0,0,0.05);
+      --shadow-xl: 0 20px 40px rgba(0,0,0,0.10), 0 8px 16px -4px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+    a:hover { text-decoration: underline; }
+    img { max-width: 100%; display: block; }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(250, 251, 252, 0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    nav .container {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .logo svg { flex-shrink: 0; }
+    .nav-links { display: flex; gap: 2.5rem; font-size: 0.9rem; font-weight: 500; }
+    .nav-links a { color: var(--text-dim); text-decoration: none; }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* hero */
+    .hero {
+      position: relative;
+      padding: 10rem 0 5rem;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -20%; right: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle at 50% 100%, rgba(99,102,241,0.06) 0%, transparent 50%),
+                  radial-gradient(circle at 20% 60%, rgba(168,85,247,0.04) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .hero > .container { position: relative; }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 1rem;
+      background: var(--accent-soft);
+      border: 1px solid rgba(99,102,241,0.15);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 2rem;
+    }
+    .hero-label::before {
+      content: '⚡';
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      padding: 1rem 2.2rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+      transition: all 0.25s;
+    }
+    .btn-primary:hover { background: #5558e6; box-shadow: 0 4px 16px rgba(99,102,241,0.4); text-decoration: none; }
+    .btn-secondary {
+      padding: 1rem 2.2rem;
+      background: var(--bg-card);
+      color: var(--text);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      transition: all 0.25s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(99,102,241,0.15); text-decoration: none; }
+
+    /* browser frame */
+    .showcase {
+      padding: 4rem 0;
+    }
+    .browser-frame {
+      max-width: 960px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-xl);
+    }
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.2rem;
+      background: #f5f6f8;
+      border-bottom: 1px solid var(--border);
+    }
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .browser-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .browser-dots span:nth-child(1) { background: #e54; }
+    .browser-dots span:nth-child(2) { background: #edc; }
+    .browser-dots span:nth-child(3) { background: #5d2; }
+    .browser-url {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* section title */
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .section-header h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-header p {
+      max-width: 540px;
+      margin: 0 auto;
+      color: var(--text-dim);
+      font-size: 1.1rem;
+    }
+
+    /* features */
+    .features {
+      padding: 5rem 0;
+    }
+    .feature-showcase {
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .feature-row.reverse .feature-content { order: 2; }
+    .feature-row.reverse .feature-visual { order: 1; }
+    .feature-content h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .feature-content p {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    .feature-tag {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+    }
+    .feature-visual {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      transition: box-shadow 0.3s;
+    }
+    .feature-visual:hover {
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+
+    /* stats */
+    .stats {
+      padding: 4rem 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* install */
+    .install {
+      padding: 5rem 0;
+    }
+    .install-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .install-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .install-card .step-desc {
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+    .install-card pre {
+      background: #252731;
+      border: none;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      overflow-x: auto;
+      color: #c0c0c8;
+      margin-bottom: 2rem;
+    }
+    .install-card pre span.cmd { color: white; }
+    .install-card pre span.comment { color: #6b6b80; }
+
+    /* stack */
+    .stack {
+      padding: 4rem 0;
+      text-align: center;
+    }
+    .stack-badges {
+      display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+    }
+    .badge {
+      padding: 0.5rem 1.2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .badge span { color: var(--text); font-weight: 600; }
+
+    /* cta */
+    .cta {
+      padding: 6rem 0;
+      text-align: center;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.25);
+    }
+    .cta-box h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .cta-box p {
+      max-width: 500px;
+      margin: 0 auto 2rem;
+      opacity: 0.85;
+      font-size: 1.1rem;
+    }
+    .cta-box .btn-white {
+      padding: 1rem 2.4rem;
+      background: #fff;
+      color: var(--accent);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: none;
+      transition: all 0.25s;
+      display: inline-block;
+    }
+    .cta-box .btn-white:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      text-decoration: none;
+    }
+
+    /* footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 8rem 0 2rem; }
+      .hero h1 { font-size: 2rem; }
+      .feature-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .feature-row.reverse .feature-content { order: 1; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="18" r="3"/>
+          <path d="M3 12a9 9 0 0 1 9 9"/>
+          <path d="M3 6a15 15 0 0 1 15 15"/>
+        </svg>
+        RSSR
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/yuanczx/RSSR" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-label">Single Binary · Zero Config · All Local</div>
+      <h1>Your Feeds.<br>Fast &amp; Private.</h1>
+      <p>A modern RSS and Atom feed reader with a CLI and a polished web UI — no accounts, no cloud sync, no noise. Just your feeds, right where you want them.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/yuanczx/RSSR" class="btn-primary" target="_blank">View on GitHub</a>
+        <a href="#install" class="btn-secondary">Quick Start →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- showcase -->
+  <section class="showcase">
+    <div class="container">
+      <div class="browser-frame">
+        <div class="browser-bar">
+          <div class="browser-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="browser-url">localhost:8080</div>
+        </div>
+        <img src="imgs/webui.png" alt="RSSR Web UI">
+      </div>
+    </div>
+  </section>
+
+  <!-- stats -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div>
+          <div class="stat-number">1</div>
+          <div class="stat-label">Binary — CLI + Web UI</div>
+        </div>
+        <div>
+          <div class="stat-number">2</div>
+          <div class="stat-label">Feed Formats — RSS &amp; Atom</div>
+        </div>
+        <div>
+          <div class="stat-number">0</div>
+          <div class="stat-label">External Services Needed</div>
+        </div>
+        <div>
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Feeds You Can Manage</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>Designed for Speed and Simplicity</h2>
+        <p>Every part of RSSR is built around keeping your reading experience fast, local, and distraction-free.</p>
+      </div>
+      <div class="feature-showcase">
+        <div class="feature-row">
+          <div class="feature-content">
+            <span class="feature-tag">Web UI</span>
+            <h3>Three-Panel Reading Layout</h3>
+            <p>Sidebar, article list, and reader — everything visible at once on desktop. On mobile, switch between views with a tap. The interface adapts to your screen size naturally.</p>
+          </div>
+          <div class="feature-visual">
+            <img src="imgs/webui.png" alt="Three-panel layout">
+          </div>
+        </div>
+        <div class="feature-row reverse">
+          <div class="feature-content">
+            <span class="feature-tag">Dark Mode</span>
+            <h3>Elegant Dark Theme</h3>
+            <p>Switch to dark mode for comfortable reading in any lighting. The UI transitions smoothly between themes — every element is designed with both light and dark aesthetics in mind.</p>
+          </div>
+          <div class="feature-visual">
+            <img src="imgs/webui_dark.png" alt="Dark theme">
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-content">
+            <span class="feature-tag">Media</span>
+            <h3>Media Panel with Masonry Grid</h3>
+            <p>Images from your feeds are laid out in a Pinterest-style masonry grid. Preview and browse media without leaving your reader — perfect for blogs and design-focused feeds.</p>
+          </div>
+          <div class="feature-visual">
+            <img src="imgs/webui_media.png" alt="Media panel">
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-content">
+            <span class="feature-tag">Mobile</span>
+            <h3>Responsive on Every Screen</h3>
+            <p>Whether you're reading on a phone or tablet, the interface collapses gracefully into single-column views — swipe between the sidebar, article list, and reader.</p>
+          </div>
+          <div class="feature-visual" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: var(--bg-card);">
+              <img src="imgs/webui_mobile_1.png" alt="Mobile view 1" style="border-radius: 5px;">
+              <img src="imgs/webui_mobile_2.png" alt="Mobile view 2" style="border-radius: 5px;">
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-content">
+            <span class="feature-tag">CLI</span>
+            <h3>Terminal-First Workflow</h3>
+            <p>Add, update, and manage feeds from the command line with <code>rssr add</code>, <code>rssr update</code>, <code>rssr read</code>, and more. Full read/unread tracking from the terminal — no browser needed.</p>
+          </div>
+          <!-- <div class="feature-visual" style="background: #252731; padding: 1.5rem;"> -->
+            <img src="imgs/cli.png" alt="CLI interface">
+          <!-- </div> -->
+        </div>
+        <div class="feature-row reverse">
+          <div class="feature-content">
+            <span class="feature-tag">Organization</span>
+            <h3>Feed Groups &amp; Categories</h3>
+            <p>Keep your feeds organized by grouping them into categories. Create media-specific groups for image-rich content, or standard groups for blogs, news, and podcasts.</p>
+          </div>
+          <div class="feature-visual">
+            <img src="imgs/webui.png" alt="Feed groups">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- stack -->
+  <section class="stack">
+    <div class="container">
+      <div class="section-header" style="margin-bottom: 2.5rem;">
+        <h2>Built With</h2>
+      </div>
+      <div class="stack-badges">
+        <div class="badge"><span>Rust</span></div>
+        <div class="badge"><span>Axum</span> web</div>
+        <div class="badge"><span>Tokio</span> async</div>
+        <div class="badge"><span>SQLx</span> SQLite</div>
+        <div class="badge"><span>React 19</span></div>
+        <div class="badge"><span>TypeScript</span></div>
+        <div class="badge"><span>Vite 7</span></div>
+        <div class="badge"><span>i18next</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- install -->
+  <section class="install" id="install">
+    <div class="container">
+      <div class="section-header">
+        <h2>Get Started in Seconds</h2>
+        <p>One command to build, one command to start reading.</p>
+      </div>
+      <div class="install-card">
+        <h3>1. Build</h3>
+        <p class="step-desc">Single binary, no external dependencies.</p>
+        <pre><span class="cmd">cargo build --release</span></pre>
+
+        <h3>2. Add a feed</h3>
+        <p class="step-desc">Subscribe to any RSS or Atom feed by URL.</p>
+        <pre><span class="cmd">rssr add</span> <span class="comment">https://example.com/feed.xml</span></pre>
+
+        <h3>3. Read in the terminal or the browser</h3>
+        <p class="step-desc">Use the CLI or start the web server.</p>
+        <pre><span class="cmd">rssr serve</span>              <span class="comment"># then open http://localhost:8080</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready to Read Feeds Your Way?</h2>
+        <p>Grab the source, build it, and start reading — all in under a minute.</p>
+        <a href="https://github.com/yuanczx/RSSR" class="btn-white" target="_blank">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>RSSR — released under the <a href="https://github.com/yuanczx/RSSR/blob/main/LICENSE" target="_blank">MIT License</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>
