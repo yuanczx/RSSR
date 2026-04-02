@@ -1,0 +1,246 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_VERSION: stable
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Generate release notes from git commits
+  # ─────────────────────────────────────────────
+  generate-release-notes:
+    name: Generate Release Notes
+    runs-on: ubuntu-latest
+    outputs:
+      release_notes: ${{ steps.gen.outputs.release_notes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build release notes from commits
+        id: gen
+        run: |
+          # Find the previous tag; fall back to the initial commit
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]' | sed -n '2p')
+          FROM="${PREV_TAG:-$(git rev-list --max-parents=0 HEAD)}"
+          TAG="${{ github.ref_name }}"
+
+          # Helper: extract commits whose subject matches a prefix pattern
+          section() {
+            local header="$1"; shift
+            local pattern="$1"; shift
+            # Collect matching lines (subject only, no merge commits)
+            local lines
+            lines=$(git log "${FROM}..HEAD" --no-merges \
+              --pretty=format:"%s|%h" \
+              | grep -iE "^(${pattern})" \
+              | sed -E 's/^[^|]+\(([^)]+)\)[^|]*\|(.*)$/\1 (\2)/; s/^([^|]+)\|(.*)$/\1 (\2)/' \
+              | sed 's/^/- /')
+            if [ -n "$lines" ]; then
+              echo "## ${header}"
+              echo ""
+              echo "$lines"
+              echo ""
+            fi
+          }
+
+          # Commits that don't match any conventional-commit prefix go to "Other Changes"
+          other_section() {
+            local lines
+            lines=$(git log "${FROM}..HEAD" --no-merges \
+              --pretty=format:"%s|%h" \
+              | grep -ivE "^(feat|fix|perf|refactor|style|docs|test|chore|ci|build|revert|breaking)" \
+              | sed -E 's/^([^|]+)\|(.*)$/\1 (\2)/' \
+              | sed 's/^/- /')
+            if [ -n "$lines" ]; then
+              echo "## Other Changes"
+              echo ""
+              echo "$lines"
+              echo ""
+            fi
+          }
+
+          # Count total commits for the summary line
+          TOTAL=$(git log "${FROM}..HEAD" --no-merges --oneline | wc -l | tr -d ' ')
+          PREV_LABEL="${PREV_TAG:-initial commit}"
+
+          {
+            echo "## ${TAG}"
+            echo ""
+            echo "> ${TOTAL} commit(s) since ${PREV_LABEL}"
+            echo ""
+
+            section "Breaking Changes"  "breaking[[:space:]!]|feat!|fix!"
+            section "New Features"      "feat(\(|:)"
+            section "Bug Fixes"         "fix(\(|:)"
+            section "Performance"       "perf(\(|:)"
+            section "Improvements"      "refactor(\(|:)|style(\(|:)"
+            section "Documentation"     "docs(\(|:)"
+            section "Chores & CI"       "chore(\(|:)|ci(\(|:)|build(\(|:)|test(\(|:)"
+            section "Reverts"           "revert(\(|:)"
+            other_section
+          } > /tmp/release_notes.md
+
+          # Expose as a GitHub output (multiline-safe)
+          {
+            echo 'release_notes<<RELEASE_EOF'
+            cat /tmp/release_notes.md
+            echo 'RELEASE_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  # ─────────────────────────────────────────────
+  # 2. Build frontend
+  # ─────────────────────────────────────────────
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        working-directory: frontend
+        run: bun run build
+        env:
+          NODE_ENV: production
+
+      - name: Package frontend dist
+        run: |
+          cd frontend
+          tar -czf ../frontend-dist.tar.gz dist/
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist.tar.gz
+          retention-days: 1
+
+  # ─────────────────────────────────────────────
+  # 3. Build Rust binaries (cross-platform)
+  # ─────────────────────────────────────────────
+  build-rust:
+    name: Build Rust – ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: linux-x86_64
+            binary_ext: ''
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: linux-aarch64
+            binary_ext: ''
+            use_cross: true
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: macos-x86_64
+            binary_ext: ''
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: macos-aarch64
+            binary_ext: ''
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: windows-x86_64
+            binary_ext: '.exe'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install cross (if needed)
+        if: matrix.use_cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build (native)
+        if: '!matrix.use_cross'
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build (cross)
+        if: matrix.use_cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Determine binary name
+        id: bin
+        shell: bash
+        run: |
+          # Read the binary name from Cargo.toml
+          BIN_NAME=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[0].targets[] | select(.kind[] == "bin") | .name' \
+            | head -1)
+          echo "bin_name=${BIN_NAME}" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${BIN_NAME}-${{ matrix.artifact_name }}${{ matrix.binary_ext }}" >> "$GITHUB_OUTPUT"
+
+      - name: Rename binary
+        shell: bash
+        run: |
+          SRC="target/${{ matrix.target }}/release/${{ steps.bin.outputs.bin_name }}${{ matrix.binary_ext }}"
+          DST="${{ steps.bin.outputs.asset_name }}"
+          cp "$SRC" "$DST"
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.artifact_name }}
+          path: ${{ steps.bin.outputs.asset_name }}
+          retention-days: 1
+
+  # ─────────────────────────────────────────────
+  # 4. Create GitHub Release
+  # ─────────────────────────────────────────────
+  release:
+    name: Create Release
+    needs: [generate-release-notes, build-frontend, build-rust]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ needs.generate-release-notes.outputs.release_notes }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}   # e.g. v1.0.0-beta → prerelease
+          files: |
+            artifacts/**

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { api } from "../api";
 import { useTranslation } from "react-i18next";
-import type { AppState, Feed, Group, Article, FeedStats, ViewType } from "../types";
+import type { AppState, Article, FeedStats, ViewType } from "../types";
 import { extractMediaFromArticle } from "../components/MasonryGrid/MasonryGrid";
 import type { MediaItem } from "../components/MasonryGrid/MasonryGrid";
 
